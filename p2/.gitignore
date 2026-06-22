@@ -36,6 +36,7 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
+stockbot/.streamlit/secrets.toml
 
 # Sounds (if custom)
 stockbot/sounds/*.wav

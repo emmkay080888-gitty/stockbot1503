@@ -48,6 +48,15 @@ if "auto_user" in params and "auto_token" in params:
     # browser JS can save them to localStorage.
 
 
+# ─── GitHub OAuth Callback ────────────────────────────────────────────
+# When GitHub redirects back with ?code=xxx&state=yyy, exchange the code
+# for a token, fetch the user profile, and log them in.
+if "code" in st.query_params and "state" in st.query_params \
+   and not st.session_state.get("github_oauth_done"):
+    from utils.oauth_github import handle_callback
+    handle_callback()
+
+
 # ─── Custom Sound Files (base64 embedded) ──────────────────────────
 import base64
 

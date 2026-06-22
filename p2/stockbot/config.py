@@ -8,7 +8,13 @@ load_dotenv()
 # --- Paths ---
 PROJECT_ROOT = Path(__file__).parent
 OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", PROJECT_ROOT / "reports"))
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+except (PermissionError, OSError):
+    # Fallback for read-only filesystems like Streamlit Cloud
+    import tempfile
+    OUTPUT_DIR = Path(tempfile.gettempdir()) / "stockbot_reports"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- API Keys ---
 TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY", "")
