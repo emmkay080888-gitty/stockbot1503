@@ -6,21 +6,53 @@ The app already has PWA (Progressive Web App) support. To install it on your And
 
 ### Option 1: Deploy to Streamlit Cloud (Free)
 
-1. **Push to GitHub:**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin https://github.com/YOUR_USER/stock-signal-bot.git
-   git push -u origin main
-   ```
+This repo is already linked to GitHub:
 
-2. **Deploy on Streamlit Community Cloud:**
-   - Go to https://share.streamlit.io
-   - Sign in with GitHub
-   - Click "New app" → select your repo → branch: `main` → file: `app.py`
-   - Click "Deploy"
-   - Wait ~2 minutes for the build
-   - Your app will be at: `https://YOUR_USER-stock-signal-bot.streamlit.app`
+```
+https://github.com/emmkay080888-gitty/stockbot1503
+```
+
+#### Step 1: Push latest code to GitHub
+
+From the repo root (`freebuffs/`):
+
+```bash
+git add stockbot/
+git commit -m "Prepare stockbot for Streamlit Cloud deployment"
+git push origin main
+```
+
+#### Step 2: Deploy on Streamlit Community Cloud
+
+1. Open **https://share.streamlit.io**
+2. Click **Sign in with GitHub** and authorize Streamlit
+3. Click **New app**
+4. Fill in:
+
+| Field | Value |
+|---|---|
+| Repository | `emmkay080888-gitty/stockbot1503` |
+| Branch | `main` |
+| Main file path | `stockbot/app.py` |
+
+5. Click **Deploy**
+6. Wait 2–3 minutes for the build
+7. Your app URL will look like: `https://stockbot1503.streamlit.app`
+
+#### Step 3: Optional secrets (Streamlit dashboard)
+
+In **Settings → Secrets**, you can add:
+
+```toml
+[twelvedata]
+api_key = "optional_twelve_data_key"
+```
+
+See `stockbot/.streamlit/secrets.toml.example` for the full template.
+
+#### Step 4: Log in to the app
+
+The repo includes a seeded admin account. Use the credentials you set when running `python seed_admin.py`, or sign up from the app UI (new accounts may reset when Streamlit Cloud restarts the container on the free tier).
 
 3. **Install on Android:**
    - Open the URL in Chrome on your phone
