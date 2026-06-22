@@ -1,0 +1,29 @@
+{
+  "name": "occult-remedies-app",
+  "version": "1.0.0",
+  "description": "Composite Esoteric Engine — multi-lens astrology, numerology, wicca, and palmistry analysis",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "keywords": [
+    "astrology",
+    "numerology",
+    "esoteric",
+    "wicca",
+    "occult"
+  ],
+  "license": "MIT",
+  "author": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
+    "uuid": "^14.0.0"
+  }
+}

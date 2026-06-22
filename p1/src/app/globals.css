@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f2f6ed;
+  --color-primary-100: #e3ecd9;
+  --color-primary-200: #c7d9b3;
+  --color-primary-300: #a6c288;
+  --color-primary-400: #84ab5d;
+  --color-primary-500: #6a8c4a;
+  --color-primary-600: #55733b;
+  --color-primary-700: #435a2e;
+  --color-primary-800: #364825;
+  --color-primary-900: #2c3c1e;
+  --color-accent-400: #c1ab58;
+  --color-accent-500: #a8904a;
+  --color-accent-600: #8d773d;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* Logo watermark background across all pages */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/logo.png');
+  background-size: 70vmin;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.12;
+  filter: brightness(1.3);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Ticker scroll animation */
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  animation: scroll 20s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* Gradient backgrounds - warm earthy tones from logo */
+.gradient-primary {
+  background: linear-gradient(135deg, #6a8c4a 0%, #a8904a 100%);
+}
+
+.gradient-dark {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+}
+
+.gradient-card {
+  background: linear-gradient(135deg, rgba(106, 140, 74, 0.1) 0%, rgba(168, 144, 74, 0.05) 100%);
+}

@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Composite Esoteric Engine</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #0a0a12;
+      --bg-surface: #12121e;
+      --bg-card: #1a1a2e;
+      --bg-card-hover: #222240;
+      --border: #2a2a4a;
+      --border-glow: #6366f1;
+      --text-primary: #e8e8f0;
+      --text-secondary: #9898b8;
+      --text-muted: #6868a0;
+      --accent-purple: #818cf8;
+      --accent-gold: #f59e0b;
+      --accent-rose: #f472b6;
+      --accent-teal: #2dd4bf;
+      --accent-red: #ef4444;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(244,114,182,0.04) 0%, transparent 50%);
+    }
+
+    /* ─── Scrollbar ──────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-glow); }
+
+    /* ─── Layout ──────────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+    /* ─── Header ──────────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 40px 20px 30px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 300;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-rose), var(--accent-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      letter-spacing: 0.15em;
+    }
+    header .badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-glow);
+      color: var(--accent-purple);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Tabs ────────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--bg-surface);
+      border-radius: var(--radius);
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .tab-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.03); }
+    .tab-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ─── Cards ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-glow); }
+
+    .card h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent-purple);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .card h4 {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* ─── Form ────────────────────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--border-glow);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-muted);
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--accent-purple), #6366f1);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      margin-top: 8px;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary.loading {
+      position: relative;
+      color: transparent;
+    }
+    .btn-primary.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      top: 50%; left: 50%;
+      margin: -10px 0 0 -10px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Error ───────────────────────────────────────────────────── */
+    .error-banner {
+      display: none;
+      padding: 12px 16px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius);
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+    .error-banner.show { display: block; }
+
+    /* ─── Results ─────────────────────────────────────────────────── */
+    #results { display: none; }
+    #results.show { display: block; }
+
+    .result-section {
+      margin-bottom: 20px;
+    }
+    .result-section summary {
+      cursor: pointer;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.2s;
+      list-style: none;
+    }
+    .result-section summary::-webkit-details-marker { display: none; }
+    .result-section summary:hover { border-color: var(--border-glow); }
+    .result-section summary .icon { font-size: 1.1rem; }
+    .result-section summary .chevron {
+      margin-left: auto;
+      transition: transform 0.2s;
+      color: var(--text-muted);
+    }
+    .result-section[open] summary .chevron { transform: rotate(90deg); }
+
+    .result-section .body {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      background: var(--bg-surface);
+    }
+
+    /* ─── Stat Display ────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--accent-gold);
+      line-height: 1.2;
+    }
+    .stat-card .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .stat-card .meaning {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    /* ─── Guidance Items ──────────────────────────────────────────── */
+    .guidance-item {
+      padding: 12px 16px;
+      border-left: 3px solid var(--accent-purple);
+      background: rgba(99,102,241,0.05);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 10px;
+    }
+    .guidance-item .priority {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .priority.primary { background: rgba(245,158,11,0.15); color: var(--accent-gold); }
+    .priority.important { background: rgba(99,102,241,0.15); color: var(--accent-purple); }
+    .priority.daily { background: rgba(45,212,191,0.15); color: var(--accent-teal); }
+    .priority.urgent { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+    .priority.foundational { background: rgba(244,114,182,0.15); color: var(--accent-rose); }
+    .guidance-item .advice { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ─── Remedy Items ────────────────────────────────────────────── */
+    .remedy-item {
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+    }
+    .remedy-item .title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--accent-teal);
+    }
+    .remedy-item .desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ─── Alignment Items ─────────────────────────────────────────── */
+    .alignment-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      border-left: 3px solid var(--border-glow);
+      background: rgba(99,102,241,0.04);
+    }
+    .alignment-item strong { color: var(--text-primary); }
+    .alignment-item .strength {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .strength.very-strong { background: rgba(239,68,68,0.2); color: var(--accent-red); }
+    .strength.strong { background: rgba(245,158,11,0.2); color: var(--accent-gold); }
+    .strength.moderate { background: rgba(99,102,241,0.2); color: var(--accent-purple); }
+
+    /* ─── Timeline ────────────────────────────────────────────────── */
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-item .period {
+      min-width: 120px;
+      font-size: 0.8rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+    .timeline-item .content .theme { font-weight: 600; font-size: 0.85rem; }
+    .timeline-item .content .detail { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ─── Element Bars ────────────────────────────────────────────── */
+    .element-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .element-bar .elem-label {
+      min-width: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .element-bar .track {
+      flex: 1;
+      height: 8px;
+      background: var(--bg-deep);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .element-bar .fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .fill.fire { background: linear-gradient(90deg, #f97316, #ef4444); }
+    .fill.earth { background: linear-gradient(90deg, #84cc16, #22c55e); }
+    .fill.air { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
+    .fill.water { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+
+    .element-bar .pct {
+      min-width: 35px;
+      text-align: right;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* ─── Loading Spinner ─────────────────────────────────────────── */
+    #loading {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    #loading.show { display: block; }
+    #loading .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-purple);
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* ─── Raw JSON Toggle ─────────────────────────────────────────── */
+    .raw-toggle {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .raw-toggle:hover { border-color: var(--border-glow); color: var(--accent-purple); }
+    #rawJson {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow: auto;
+    }
+    #rawJson.show { display: block; }
+
+    /* ─── Moon Phase ──────────────────────────────────────────────── */
+    .moon-display {
+      text-align: center;
+      padding: 16px;
+    }
+    .moon-display .symbol { font-size: 3rem; }
+    .moon-display .name { font-size: 1.1rem; font-weight: 600; margin-top: 8px; }
+    .moon-display .desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ─── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .container { padding: 12px; }
+      header h1 { font-size: 1.4rem; letter-spacing: 0.3em; }
+      .form-grid { grid-template-columns: 1fr; }
+      .tabs { flex-wrap: wrap; }
+      .tab-btn { font-size: 0.75rem; padding: 8px 10px; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ─── Header ──────────────────────────────────────────────── -->
+  <header>
+    <h1>✦ Esoteric Engine ✦</h1>
+    <p>Numerology · Astrology · Wicca · Palmistry</p>
+    <span class="badge">Composite Multi-Lens Reading</span>
+  </header>
+
+  <!-- ─── Tabs ────────────────────────────────────────────────── -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="input">📝 Input</button>
+    <button class="tab-btn" data-tab="results" id="resultsTabBtn" style="display:none">📊 Reading</button>
+  </div>
+
+  <!-- ─── Tab: Input ──────────────────────────────────────────── -->
+  <div class="tab-content active" id="tab-input">
+
+    <div class="card">
+      <h3>✦ Your Birth Data</h3>
+      <form id="readingForm" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="birthDate">Birth Date *</label>
+            <input type="date" id="birthDate" required />
+          </div>
+          <div class="form-group">
+            <label for="birthTime">Birth Time (optional)</label>
+            <input type="time" id="birthTime" />
+          </div>
+          <div class="form-group">
+            <label for="locationText">Birth Place (optional)</label>
+            <input type="text" id="locationText" placeholder="e.g. London, UK  or  10001  or  Mumbai" />
+          </div>
+          <div class="form-group">
+            <label for="gender">Gender (optional)</label>
+            <select id="gender">
+              <option value="">— Not specified —</option>
+              <option value="male">♂ Male</option>
+              <option value="female">♀ Female</option>
+              <option value="non-binary">⚧ Non-binary</option>
+              <option value="prefer-not-to-say">— Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="fullName">Full Birth Name (optional — unlocks Expression & Soul Urge)</label>
+            <input type="text" id="fullName" placeholder="e.g. Jane Doe" />
+          </div>
+          <div class="form-group full-width">
+            <label for="question">Your Question (optional)</label>
+            <textarea id="question" placeholder="What would you like guidance on? e.g. What should I focus on in my career?"></textarea>
+          </div>
+        </div>
+
+        <details style="margin-top:12px;">
+          <summary style="cursor:pointer; color:var(--text-muted); font-size:0.8rem; letter-spacing:0.05em;">
+            🖐 Palmistry (optional — upload a photo or answer the questionnaire)
+          </summary>
+          <div class="form-grid" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+            <div class="form-group full-width">
+              <label for="palmImage">Upload a clear photo of your palm</label>
+              <input type="file" id="palmImage" accept="image/jpeg,image/png,image/webp,image/gif" />
+              <span style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Accepted: JPEG, PNG, WebP, GIF · Max 10 MB</span>
+            </div>
+            <div class="form-group">
+              <label>Hand Shape</label>
+              <select id="handShape">
+                <option value="">— Not answered —</option>
+                <option value="earth">🌍 Earth — Square palm, short fingers</option>
+                <option value="air">💨 Air — Square palm, long fingers</option>
+                <option value="water">🌊 Water — Long palm, long fingers</option>
+                <option value="fire">🔥 Fire — Square/rectangular palm, short fingers</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Heart Line Length</label>
+              <select id="heartLength">
+                <option value="">— Not answered —</option>
+                <option value="long">Long — Curves up from edge of palm</option>
+                <option value="medium">Medium — Reaches middle of palm</option>
+                <option value="short">Short — Stops near edge</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Heart Line Depth</label>
+              <select id="heartDepth">
+                <option value="">— Not answered —</option>
+                <option value="deep">Deep — Clearly etched</option>
+                <option value="normal">Normal — Moderately visible</option>
+                <option value="faint">Faint — Hard to see</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Heart Line Curvature</label>
+              <select id="heartCurvature">
+                <option value="">— Not answered —</option>
+                <option value="curved">Curved — Sweeps upward</option>
+                <option value="straight">Straight — Runs across palm</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Head Line Length</label>
+              <select id="headLength">
+                <option value="">— Not answered —</option>
+                <option value="long">Long — Crosses entire palm</option>
+                <option value="medium">Medium — Reaches ring finger</option>
+                <option value="short">Short — Ends at middle finger</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Head Line Depth</label>
+              <select id="headDepth">
+                <option value="">— Not answered —</option>
+                <option value="deep">Deep — Clearly etched</option>
+                <option value="normal">Normal — Moderately visible</option>
+                <option value="faint">Faint — Hard to see</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Head Line Angle</label>
+              <select id="headAngle">
+                <option value="">— Not answered —</option>
+                <option value="downward">Downward — Slants toward wrist</option>
+                <option value="straight">Straight — Across the palm</option>
+                <option value="upward">Upward — Angles up slightly</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Life Line Length</label>
+              <select id="lifeLength">
+                <option value="">— Not answered —</option>
+                <option value="long">Long — Reaches wrist</option>
+                <option value="medium">Medium — Reaches mid-palm</option>
+                <option value="short">Short — Stops early</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Life Line Depth</label>
+              <select id="lifeDepth">
+                <option value="">— Not answered —</option>
+                <option value="deep">Deep — Clearly etched</option>
+                <option value="normal">Normal — Moderately visible</option>
+                <option value="faint">Faint — Hard to see</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Life Line Shape</label>
+              <select id="lifeShape">
+                <option value="">— Not answered —</option>
+                <option value="curved">Curved — Wraps around thumb</option>
+                <option value="straight">Straight — Runs directly down</option>
+                <option value="wide">Wide — Large arc around thumb</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <div class="error-banner" id="errorBanner"></div>
+        <button type="submit" class="btn-primary" id="submitBtn">✦ Cast the Reading</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ─── Tab: Results ────────────────────────────────────────── -->
+  <div class="tab-content" id="tab-results">
+
+    <div id="loading" class="show">
+      <div class="spinner"></div>
+      <p>Consulting the celestial records...</p>
+    </div>
+
+    <div id="results">
+
+      <!-- Metadata -->
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span style="color:var(--text-muted); font-size:0.8rem;" id="metaBirthDate"></span>
+        <span style="color:var(--text-muted); font-size:0.8rem;" id="metaQuestion"></span>
+        <span style="color:var(--text-muted); font-size:0.8rem;" id="metaReadingDate"></span>
+      </div>
+
+      <!-- Analysis -->
+      <div class="result-section" id="sec-numerology">
+        <summary><span class="icon">🔢</span> Numerology <span class="chevron">▶</span></summary>
+        <div class="body"><div id="numerologyContent"></div></div>
+      </div>
+
+      <div class="result-section" id="sec-astrology">
+        <summary><span class="icon">🪐</span> Astrology <span class="chevron">▶</span></summary>
+        <div class="body"><div id="astrologyContent"></div></div>
+      </div>
+
+      <div class="result-section" id="sec-wicca">
+        <summary><span class="icon">🌙</span> Wicca &amp; Occult <span class="chevron">▶</span></summary>
+        <div class="body"><div id="wiccaContent"></div></div>
+      </div>
+
+      <div class="result-section" id="sec-palmistry">
+        <summary><span class="icon">🖐</span> Palmistry <span class="chevron">▶</span></summary>
+        <div class="body"><div id="palmistryContent"></div></div>
+      </div>
+
+      <!-- Predictions -->
+      <div class="result-section" id="sec-predictions">
+        <summary><span class="icon">🔮</span> Timeline Predictions <span class="chevron">▶</span></summary>
+        <div class="body"><div id="predictionsContent"></div></div>
+      </div>
+
+      <!-- Guidance -->
+      <div class="result-section" id="sec-guidance" open>
+        <summary><span class="icon">💫</span> Guidance <span class="chevron">▶</span></summary>
+        <div class="body"><div id="guidanceContent"></div></div>
+      </div>
+
+      <!-- Remedies -->
+      <div class="result-section" id="sec-remedies" open>
+        <summary><span class="icon">🌿</span> Remedies &amp; Rituals <span class="chevron">▶</span></summary>
+        <div class="body"><div id="remediesContent"></div></div>
+      </div>
+
+      <!-- Alignments -->
+      <div class="result-section" id="sec-alignments">
+        <summary><span class="icon">⚡</span> Cross-Branch Alignments <span class="chevron">▶</span></summary>
+        <div class="body"><div id="alignmentsContent"></div></div>
+      </div>
+
+      <!-- Raw JSON toggle -->
+      <button class="raw-toggle" id="rawToggle">📄 Show Raw JSON</button>
+      <pre id="rawJson"></pre>
+
+      <div style="text-align:center; margin-top:24px;">
+        <button class="btn-primary" onclick="switchTab('input')" style="max-width:300px; margin:0 auto;">
+          ✦ New Reading
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ─── Tab Switching ──────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+    document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // ─── Form Submission ────────────────────────────────────────────
+  const form = document.getElementById('readingForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorBanner = document.getElementById('errorBanner');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBanner.classList.remove('show');
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.textContent = '';
+
+    const formData = new FormData();
+    formData.append('birthDate', document.getElementById('birthDate').value);
+    if (document.getElementById('birthTime').value) formData.append('birthTime', document.getElementById('birthTime').value);
+    if (document.getElementById('locationText').value) formData.append('locationText', document.getElementById('locationText').value);
+    if (document.getElementById('fullName').value) formData.append('fullName', document.getElementById('fullName').value);
+    if (document.getElementById('gender').value) formData.append('gender', document.getElementById('gender').value);
+    if (document.getElementById('question').value) formData.append('question', document.getElementById('question').value);
+
+    // Palmistry questionnaire fields
+    const palmFields = ['handShape','heartLength','heartDepth','heartCurvature','headLength','headDepth','headAngle','lifeLength','lifeDepth','lifeShape'];
+    for (const field of palmFields) {
+      const val = document.getElementById(field).value;
+      if (val) formData.append(field, val);
+    }
+
+    // Palm image upload (file)
+    const palmFile = document.getElementById('palmImage').files[0];
+    if (palmFile) formData.append('palmImage', palmFile);
+
+    try {
+      const res = await fetch('/api/v1/reading', {
+        method: 'POST',
+        body: formData,  // FormData sets multipart/form-data automatically
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.message || json.error || 'Unknown error');
+      }
+
+      displayResults(json.data);
+      switchTab('results');
+      document.getElementById('resultsTabBtn').style.display = '';
+    } catch (err) {
+      errorBanner.textContent = err.message;
+      errorBanner.classList.add('show');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+      submitBtn.textContent = '✦ Cast the Reading';
+    }
+  });
+
+  // ─── Display Results ───────────────────────────────────────────
+  function displayResults(data) {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('results').classList.add('show');
+
+    // Raw JSON
+    document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+
+    // Metadata
+    const meta = data.metadata || {};
+    document.getElementById('metaBirthDate').textContent = `🎂 ${meta.birthDate || '?'}`;
+    document.getElementById('metaQuestion').textContent = meta.question ? `❝${meta.question}❞` : '';
+    const rd = meta.readingDate ? new Date(meta.readingDate).toLocaleString() : '';
+    document.getElementById('metaReadingDate').textContent = `📆 ${rd}`;
+
+    // Numerology
+    renderNumerology(data.analysis?.numerology);
+
+    // Astrology
+    renderAstrology(data.analysis?.astrology);
+
+    // Wicca
+    renderWicca(data.analysis?.wicca);
+
+    // Palmistry
+    renderPalmistry(data.analysis?.palmistry);
+
+    // Predictions
+    renderPredictions(data.prediction);
+
+    // Guidance
+    renderGuidance(data.guidance);
+
+    // Remedies
+    renderRemedies(data.remedies);
+
+    // Alignments
+    renderAlignments(data.alignments);
+  }
+
+  // ─── Render Sections ───────────────────────────────────────────
+  function renderNumerology(num) {
+    if (!num) return;
+    let html = '<div class="stat-grid">';
+
+    const stats = [
+      { n: num.lifePath?.number, l: 'Life Path', m: num.lifePath?.meaning?.keyword },
+      { n: num.expression?.number, l: 'Expression', m: num.expression?.meaning?.keyword },
+      { n: num.soulUrge?.number, l: 'Soul Urge', m: num.soulUrge?.meaning?.keyword },
+      { n: num.personality?.number, l: 'Personality', m: num.personality?.meaning?.keyword },
+      { n: num.currentTiming?.personalYear?.number, l: 'Personal Year', m: num.currentTiming?.personalYear?.meaning?.keyword },
+      { n: num.currentTiming?.personalMonth?.number, l: 'Personal Month', m: num.currentTiming?.personalMonth?.meaning?.keyword },
+      { n: num.currentTiming?.personalDay?.number, l: 'Personal Day', m: num.currentTiming?.personalDay?.meaning?.keyword },
+    ];
+
+    for (const s of stats) {
+      if (s.n !== null && s.n !== undefined) {
+        html += `<div class="stat-card"><div class="number">${s.n}</div><div class="label">${s.l}</div><div class="meaning">${s.m ?? ''}</div></div>`;
+      }
+    }
+    html += '</div>';
+
+    // Descriptions
+    if (num.lifePath?.description) html += `<p style="margin-top:12px; font-size:0.85rem; color:var(--text-secondary);">${num.lifePath.description}</p>`;
+    if (num.currentTiming?.personalYear?.description) html += `<p style="font-size:0.85rem; color:var(--text-secondary);">${num.currentTiming.personalYear.description}</p>`;
+
+    // Challenges
+    if (num.challenges) {
+      html += '<h4 style="margin-top:14px; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">Challenges</h4>';
+      for (const [k, v] of Object.entries(num.challenges)) {
+        html += `<div style="font-size:0.8rem; color:var(--text-secondary); margin:2px 0;">${v.description}</div>`;
+      }
+    }
+
+    // Karmic Debts
+    if (num.karmicDebts?.length) {
+      html += '<h4 style="margin-top:14px; font-size:0.8rem; color:var(--accent-red); text-transform:uppercase; letter-spacing:0.1em;">Karmic Debts</h4>';
+      for (const d of num.karmicDebts) {
+        html += `<div style="font-size:0.8rem; color:var(--text-secondary); margin:2px 0;">${d.description}</div>`;
+      }
+    }
+
+    document.getElementById('numerologyContent').innerHTML = html;
+  }
+
+  function renderAstrology(astro) {
+    if (!astro) return;
+    let html = '';
+
+    if (astro.ascendant) {
+      html += `<p style="margin-bottom:12px; font-size:0.9rem;"><strong>Ascendant:</strong> ${astro.ascendant.description}</p>`;
+    }
+
+    html += '<h4 style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Planetary Positions</h4>';
+    html += '<div class="stat-grid">';
+    for (const [planet, pdata] of Object.entries(astro.planets || {})) {
+      html += `<div class="stat-card"><div class="number" style="font-size:1.2rem;">${planet}</div><div class="label">${pdata.sign}</div><div class="meaning">House ${pdata.house}</div></div>`;
+    }
+    html += '</div>';
+
+    if (astro.status === 'mock') {
+      html += `<p style="margin-top:12px; font-size:0.75rem; color:var(--accent-gold); font-style:italic;">${astro.note}</p>`;
+    }
+
+    document.getElementById('astrologyContent').innerHTML = html;
+  }
+
+  function renderWicca(wicca) {
+    if (!wicca) return;
+    let html = '';
+
+    // Moon Phase
+    if (wicca.moonPhase) {
+      html += `<div class="moon-display">
+        <div class="symbol">${wicca.moonPhase.symbol}</div>
+        <div class="name">${wicca.moonPhase.name}</div>
+        <div class="desc">${wicca.moonPhase.description}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+          Illumination: ${wicca.moonPhase.illumination}% · Days into cycle: ${wicca.moonPhase.daysIntoCycle}
+        </div>
+      </div>`;
+    }
+
+    // Elemental Balance
+    if (wicca.elementalBalance?.elements) {
+      html += '<h4 style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin:16px 0 8px;">Elemental Balance</h4>';
+      for (const [elem, data] of Object.entries(wicca.elementalBalance.elements)) {
+        html += `<div class="element-bar">
+          <span class="elem-label" style="color:var(--text-primary);">${elem}</span>
+          <div class="track"><div class="fill ${elem}" style="width:${data.percentage}%"></div></div>
+          <span class="pct">${data.percentage}%</span>
+        </div>`;
+      }
+    }
+
+    // Sabbat
+    if (wicca.sabbat) {
+      html += `<p style="margin-top:12px; font-size:0.85rem;">
+        <strong>🕯 Next Sabbat:</strong> ${wicca.sabbat.name}
+        ${wicca.sabbat.daysAway === 0 ? '(today!)' : `(${wicca.sabbat.daysAway} days away)`}
+        <br/><span style="color:var(--text-secondary);font-size:0.8rem;">${wicca.sabbat.energy}</span>
+      </p>`;
+    }
+
+    // Day Correspondence
+    if (wicca.dayCorrespondence) {
+      html += `<p style="margin-top:8px; font-size:0.85rem;">
+        <strong>📅 Today:</strong> ${wicca.dayCorrespondence.planet}'s day · ${wicca.dayCorrespondence.energy}
+        · Color: ${wicca.dayCorrespondence.color}
+        · Crystals: ${(wicca.dayCorrespondence.crystals || []).join(', ')}
+      </p>`;
+    }
+
+    if (wicca.currentSeason) {
+      html += `<p style="margin-top:8px; font-size:0.85rem; color:var(--text-secondary);">
+        <strong>Season:</strong> ${wicca.currentSeason.season} (${wicca.currentSeason.hemisphere} Hemisphere)
+      </p>`;
+    }
+
+    document.getElementById('wiccaContent').innerHTML = html;
+  }
+
+  function renderPalmistry(palm) {
+    if (!palm) return;
+    let html = '';
+
+    if (palm.handShape) {
+      html += `<p style="margin-bottom:10px;"><strong>Hand Shape:</strong> ${palm.handShape.keyword} · ${palm.handShape.description}</p>`;
+    }
+
+    if (Object.keys(palm.lines || {}).length > 0) {
+      html += '<h4 style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Line Interpretations</h4>';
+      for (const [line, data] of Object.entries(palm.lines)) {
+        html += `<div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:6px; padding-left:8px; border-left:2px solid var(--border-glow);">${data.description}</div>`;
+      }
+    }
+
+    if (Object.keys(palm.mounts || {}).length > 0) {
+      html += '<h4 style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Mounts</h4>';
+      for (const [, data] of Object.entries(palm.mounts)) {
+        if (data) html += `<div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:4px;"><strong>${data.planet}:</strong> ${data.fullness} · ${data.qualities}</div>`;
+      }
+    }
+
+    if (palm.questionnaire && Object.keys(palm.lines || {}).length === 0 && !palm.handShape) {
+      html += `<p style="font-size:0.85rem;color:var(--text-muted);font-style:italic;">Submit palmistry questionnaire answers above for hand analysis.</p>`;
+    }
+
+    document.getElementById('palmistryContent').innerHTML = html;
+  }
+
+  function renderPredictions(pred) {
+    if (!pred) return;
+    let html = '';
+
+    if (pred.overridingTheme) {
+      html += `<p style="margin-bottom:12px; font-size:0.9rem;"><strong>Overriding Theme:</strong> ${pred.overridingTheme}</p>`;
+    }
+
+    if (pred.timeline?.length) {
+      html += '<h4 style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Timeline</h4>';
+      for (const t of pred.timeline) {
+        html += `<div class="timeline-item">
+          <div class="period">${t.period}</div>
+          <div class="content"><div class="theme">${t.theme}</div><div class="detail">${t.detail}</div></div>
+        </div>`;
+      }
+    }
+
+    document.getElementById('predictionsContent').innerHTML = html;
+  }
+
+  function renderGuidance(guidance) {
+    if (!guidance?.length) return;
+    let html = '';
+    for (const g of guidance) {
+      html += `<div class="guidance-item">
+        <div class="priority ${g.priority}">${g.priority}</div>
+        <div style="font-size:0.8rem;color:var(--accent-purple);margin-bottom:4px;">${g.area}</div>
+        <div class="advice">${g.advice}</div>
+      </div>`;
+    }
+    document.getElementById('guidanceContent').innerHTML = html;
+  }
+
+  function renderRemedies(remedies) {
+    if (!remedies?.length) return;
+    let html = '';
+    for (const r of remedies) {
+      html += `<div class="remedy-item">
+        <div class="title">${r.title}</div>
+        <div class="desc">${r.description}</div>
+      </div>`;
+    }
+    document.getElementById('remediesContent').innerHTML = html;
+  }
+
+  function renderAlignments(alignments) {
+    if (!alignments?.length) return;
+    let html = '';
+    for (const a of alignments) {
+      html += `<div class="alignment-item">
+        <strong>${a.title}</strong>
+        <span class="strength ${a.strength}">${a.strength}</span>
+        <p style="margin-top:4px; font-size:0.82rem; color:var(--text-secondary);">${a.description}</p>
+        <div style="margin-top:4px; font-size:0.7rem; color:var(--text-muted);">Sources: ${(a.sources || []).join(', ')}</div>
+      </div>`;
+    }
+    document.getElementById('alignmentsContent').innerHTML = html;
+  }
+
+  // ─── Raw JSON toggle ──────────────────────────────────────────
+  document.getElementById('rawToggle').addEventListener('click', () => {
+    document.getElementById('rawJson').classList.toggle('show');
+  });
+
+  // ─── Focus first tab on load ───────────────────────────────────
+  switchTab('input');
+</script>
+
+</body>
+</html>
