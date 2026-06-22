@@ -35,7 +35,8 @@ git push origin main
 | Branch | `main` |
 | Main file path | `stockbot/app.py` |
 
-5. Click **Deploy**
+5. Expand **Advanced settings** and set **Python version** to **3.12** (required — 3.13 breaks `pandas-ta` / `numba`).
+6. Click **Deploy**
 6. Wait 2–3 minutes for the build
 7. Your app URL will look like: `https://stockbot1503.streamlit.app`
 
