@@ -19,6 +19,7 @@ node_modules/
 
 # production
 /build
+dist/
 
 # Python
 __pycache__/
@@ -27,6 +28,7 @@ __pycache__/
 *.egg
 venv/
 .venv/
+venv_check/
 
 # misc
 .DS_Store
@@ -40,6 +42,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.streanlit/secrets.toml
+*.env.local
 
 # vercel
 .vercel
@@ -51,6 +55,8 @@ next-env.d.ts
 # IDEs
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Generated reports (p2)
 reports/
@@ -60,3 +66,23 @@ reports/
 
 # OS generated
 Thumbs.db
+
+# Android SDK
+android-sdk/
+
+# Android build
+android/
+.gradle/
+local.properties
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Sounds (if custom)
+stockbot/sounds/*.wav
+stockbot/sounds/*.mp3
+stockbot/sounds/*.ogg
+
+# Build artifacts
+*.exe
+*.msi
