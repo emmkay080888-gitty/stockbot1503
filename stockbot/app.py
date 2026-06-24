@@ -417,98 +417,131 @@ with st.sidebar:
     st.markdown("<p style='color: #8892b0; font-size: 0.85rem;'>Multi-strategy signal consolidation</p>", unsafe_allow_html=True)
     st.divider()
     
-    # Close sidebar button
-    if st.button("✕ Close Sidebar", key="close_sidebar", use_container_width=True):
-        st.session_state.sidebar_closed = True
-        st.rerun()
-    
-    # Show sidebar content only if not closed
-    if not st.session_state.get("sidebar_closed", False):
-        # User section
-        if is_logged_in():
-            user = get_current_user()
-            role_badge = "🛡️" if is_admin() else "👤"
-            st.markdown(
-                f"<p style='color: {'#ffd700' if is_admin() else '#00c853'}; font-size: 0.85rem;'>"
-                f"{role_badge} Logged in as <strong>{user.get('name', 'User')}</strong>"
-                f"{' 🛡️ <span style="color:#ffd700;font-size:0.7rem;">ADMIN</span>' if is_admin() else ''}</p>",
-                unsafe_allow_html=True,
-            )
-            if st.button("👤 My Profile", use_container_width=True,
-                         type="secondary" if st.session_state.current_page != "profile" else "primary"):
-                st.session_state.current_page = "profile"
-                st.rerun()
-            if is_admin():
-                if st.button("🛡️ Admin Dashboard", use_container_width=True,
-                             type="secondary" if st.session_state.current_page != "admin" else "primary"):
-                    st.session_state.current_page = "admin"
-                    st.rerun()
-        else:
-            if st.button("🔐 Login", use_container_width=True,
-                         type="secondary" if st.session_state.current_page != "login" else "primary"):
-                st.session_state.current_page = "login"
-                st.rerun()
-            if st.button("📝 Sign Up", use_container_width=True,
-                         type="secondary" if st.session_state.current_page != "signup" else "primary"):
-                st.session_state.current_page = "signup"
-                st.rerun()
-
-        st.divider()
-
-        # Navigation
-        st.markdown("### Navigation")
-        pages = {
-            "🏠 Home": "landing",
-            "🔮 Magic Call": "magic_call",
-            "🔍 Market Scan": "market_scan",
-            "📊 Stock Analysis": "stock_analysis",
-            "📈 LiveChart": "live_chart",
-            "🔄 Backtest": "backtest",
-            "⚙️ Settings": "settings",
+    # Auto-collapse sidebar on navigation
+    st.markdown("""
+    <script>
+    (function() {
+        // Auto-collapse sidebar after clicking navigation buttons
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Wait for buttons to be rendered
+                    setTimeout(function() {
+                        const buttons = document.querySelectorAll('section[data-testid="stSidebar"] button');
+                        buttons.forEach(function(btn) {
+                            // Remove old listeners by cloning
+                            const newBtn = btn.cloneNode(true);
+                            btn.parentNode.replaceChild(newBtn, btn);
+                            
+                            newBtn.addEventListener('click', function() {
+                                setTimeout(function() {
+                                    // Try to collapse sidebar
+                                    const collapseBtn = document.querySelector('[data-testid="collapsedControl"]');
+                                    if (collapseBtn) {
+                                        collapseBtn.click();
+                                    }
+                                }, 200);
+                            });
+                        });
+                    }, 100);
+                }
+            });
+        });
+        
+        // Start observing sidebar
+        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+        if (sidebar) {
+            observer.observe(sidebar, { childList: true, subtree: true });
         }
-
-        for label, page_id in pages.items():
-            if st.button(label, use_container_width=True,
-                         type="secondary" if st.session_state.current_page != page_id else "primary",
-                         key=f"nav_{page_id}"):
-                st.session_state.current_page = page_id
-                st.rerun()
-
-        st.divider()
-
-        # Market exchange selector (global)
-        st.markdown("### 🌍 Market")
-        market_options = get_market_list()
-        current_market = get_current_market_key()
-        selected_market = st.selectbox(
-            "Select Exchange",
-            options=[m["key"] for m in market_options],
-            format_func=lambda k: next((m["label"] for m in market_options if m["key"] == k), k),
-            index=next((i for i, m in enumerate(market_options) if m["key"] == current_market), 0),
-            key="market_selector",
-            label_visibility="collapsed",
-        )
-        if selected_market != current_market:
-            set_market(selected_market)
-            st.rerun()
-
-        # Show active market context (timezone + currency) — visible on all pages
-        mkt_cfg = get_market_config()
+    })();
+    </script>
+    """, unsafe_allow_html=True)
+    
+    # User section
+    if is_logged_in():
+        user = get_current_user()
+        role_badge = "🛡️" if is_admin() else "👤"
         st.markdown(
-            f"<div style='background: rgba(124,77,255,0.08); border: 1px solid rgba(124,77,255,0.15); "
-            f"border-radius: 8px; padding: 8px 12px; margin: 4px 0;'>"
-            f"<div style='color: #78909c; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px;'>Active Market</div>"
-            f"<div style='color: #e0e0e0; font-size: 0.85rem; font-weight: 600;'>"
-            f"{mkt_cfg['emoji']} {mkt_cfg['name']}</div>"
-            f"<div style='color: #8892b0; font-size: 0.75rem; display: flex; gap: 12px; margin-top: 2px;'>"
-            f"<span>🪙 {mkt_cfg['currency']}</span>"
-            f"<span>🕐 {mkt_cfg['timezone']}</span>"
-            f"</div></div>",
+            f"<p style='color: {'#ffd700' if is_admin() else '#00c853'}; font-size: 0.85rem;'>"
+            f"{role_badge} Logged in as <strong>{user.get('name', 'User')}</strong>"
+            f"{' 🛡️ <span style="color:#ffd700;font-size:0.7rem;">ADMIN</span>' if is_admin() else ''}</p>",
             unsafe_allow_html=True,
         )
+        if st.button("👤 My Profile", use_container_width=True,
+                     type="secondary" if st.session_state.current_page != "profile" else "primary"):
+            st.session_state.current_page = "profile"
+            st.rerun()
+        if is_admin():
+            if st.button("🛡️ Admin Dashboard", use_container_width=True,
+                         type="secondary" if st.session_state.current_page != "admin" else "primary"):
+                st.session_state.current_page = "admin"
+                st.rerun()
+    else:
+        if st.button("🔐 Login", use_container_width=True,
+                     type="secondary" if st.session_state.current_page != "login" else "primary"):
+            st.session_state.current_page = "login"
+            st.rerun()
+        if st.button("📝 Sign Up", use_container_width=True,
+                     type="secondary" if st.session_state.current_page != "signup" else "primary"):
+            st.session_state.current_page = "signup"
+            st.rerun()
 
-        st.divider()
-        st.markdown("<p style='color: #555; font-size: 0.75rem;'>Data: Yahoo Finance<br>Strategies: 7<br>Powered by StockBot</p>", unsafe_allow_html=True)
+    st.divider()
+
+    # Navigation
+    st.markdown("### Navigation")
+    pages = {
+        "🏠 Home": "landing",
+        "🔮 Magic Call": "magic_call",
+        "🔍 Market Scan": "market_scan",
+        "📊 Stock Analysis": "stock_analysis",
+        "📈 LiveChart": "live_chart",
+        "🔄 Backtest": "backtest",
+        "⚙️ Settings": "settings",
+    }
+
+    for label, page_id in pages.items():
+        if st.button(label, use_container_width=True,
+                     type="secondary" if st.session_state.current_page != page_id else "primary",
+                     key=f"nav_{page_id}"):
+            st.session_state.current_page = page_id
+            st.rerun()
+
+    st.divider()
+
+    # Market exchange selector (global)
+    st.markdown("### 🌍 Market")
+    market_options = get_market_list()
+    current_market = get_current_market_key()
+    selected_market = st.selectbox(
+        "Select Exchange",
+        options=[m["key"] for m in market_options],
+        format_func=lambda k: next((m["label"] for m in market_options if m["key"] == k), k),
+        index=next((i for i, m in enumerate(market_options) if m["key"] == current_market), 0),
+        key="market_selector",
+        label_visibility="collapsed",
+    )
+    if selected_market != current_market:
+        set_market(selected_market)
+        st.rerun()
+
+    # Show active market context (timezone + currency) — visible on all pages
+    mkt_cfg = get_market_config()
+    st.markdown(
+        f"<div style='background: rgba(124,77,255,0.08); border: 1px solid rgba(124,77,255,0.15); "
+        f"border-radius: 8px; padding: 8px 12px; margin: 4px 0;'>"
+        f"<div style='color: #78909c; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px;'>Active Market</div>"
+        f"<div style='color: #e0e0e0; font-size: 0.85rem; font-weight: 600;'>"
+        f"{mkt_cfg['emoji']} {mkt_cfg['name']}</div>"
+        f"<div style='color: #8892b0; font-size: 0.75rem; display: flex; gap: 12px; margin-top: 2px;'>"
+        f"<span>🪙 {mkt_cfg['currency']}</span>"
+        f"<span>🕐 {mkt_cfg['timezone']}</span>"
+        f"</div></div>",
+        unsafe_allow_html=True,
+    )
+
+    st.divider()
+    st.markdown("<p style='color: #555; font-size: 0.75rem;'>Data: Yahoo Finance<br>Strategies: 7<br>Powered by StockBot</p>", unsafe_allow_html=True)
 
 
 # ─── Page Router with Auth Gate ─────────────────────────────────────
