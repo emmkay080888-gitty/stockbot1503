@@ -27,42 +27,6 @@ def show():
         unsafe_allow_html=True,
     )
 
-    # ─── Quick Ticker Search ──────────────────────────────────────
-    with st.expander("🔎 Quick Ticker Search", expanded=False):
-        st.markdown("**Search for a specific stock to analyze**")
-        search_col1, search_col2 = st.columns([3, 1])
-        
-        with search_col1:
-            search_query = st.text_input(
-                "Search Company or Ticker",
-                placeholder="Type company name or ticker (e.g., 'Reliance', 'RELIANCE')",
-                label_visibility="collapsed"
-            )
-        
-        with search_col2:
-            search_clicked = st.button("Search", type="secondary")
-        
-        if search_clicked and search_query:
-            search_results = search_tickers(search_query, limit=5)
-            
-            if search_results:
-                st.markdown("**Search Results:**")
-                for result in search_results:
-                    col1, col2, col3 = st.columns([2, 3, 1])
-                    with col1:
-                        st.code(result['symbol'])
-                    with col2:
-                        st.write(f"{result['name']} ({result['exchange']})")
-                    with col3:
-                        if st.button("Analyze", key=f"analyze_{result['symbol']}"):
-                            st.session_state["selected_ticker"] = result['symbol']
-                            st.session_state["current_page"] = "stock_analysis"
-                            st.rerun()
-            else:
-                st.warning("No results found. Try a different search term.")
-
-    st.divider()
-
     # ─── Scan Controls ────────────────────────────────────────────
     col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
 

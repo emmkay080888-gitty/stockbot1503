@@ -248,6 +248,37 @@ st.markdown("""<style>
     }
     .stAlert { border-radius: 12px; border-left: 4px solid #7c4dff; }
     .stDataFrame { border-radius: 12px; overflow: hidden; }
+    
+    /* Prevent pull-to-refresh on mobile */
+    html, body {
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Refresh button styling */
+    .refresh-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: linear-gradient(135deg, #7c4dff, #00c853);
+        border: none;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(124, 77, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+    .refresh-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(124, 77, 255, 0.7);
+    }
+    .refresh-btn:active {
+        transform: scale(0.95);
+    }
 
     /* Landing */
     .landing-hero {
@@ -385,6 +416,30 @@ with st.sidebar:
     st.markdown("<h1 style='color: #00ff88;'>📈 Stock Signal Bot</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #8892b0; font-size: 0.85rem;'>Multi-strategy signal consolidation</p>", unsafe_allow_html=True)
     st.divider()
+    
+    # Auto-collapse sidebar on page selection
+    st.markdown("""
+    <script>
+    // Auto-collapse sidebar after page selection
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find all sidebar buttons
+        const sidebarButtons = document.querySelectorAll('section[data-testid="stSidebar"] button');
+        
+        sidebarButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Small delay to let the page load
+                setTimeout(() => {
+                    // Collapse sidebar by clicking the collapse button if it exists
+                    const collapseBtn = document.querySelector('[data-testid="collapsedControl"]');
+                    if (collapseBtn) {
+                        collapseBtn.click();
+                    }
+                }, 100);
+            });
+        });
+    });
+    </script>
+    """, unsafe_allow_html=True)
 
     # User section
     if is_logged_in():
@@ -431,7 +486,8 @@ with st.sidebar:
 
     for label, page_id in pages.items():
         if st.button(label, use_container_width=True,
-                     type="secondary" if st.session_state.current_page != page_id else "primary"):
+                     type="secondary" if st.session_state.current_page != page_id else "primary",
+                     key=f"nav_{page_id}"):
             st.session_state.current_page = page_id
             st.rerun()
 
@@ -479,6 +535,72 @@ PUBLIC_PAGES = {"landing", "login", "signup", "forgot_password"}
 PROTECTED_PAGES = {"magic_call", "market_scan", "stock_analysis", "live_chart", "backtest", "settings", "profile", "admin"}
 
 page = st.session_state.current_page
+
+# Add refresh button and prevent pull-to-refresh
+st.markdown("""
+<style>
+/* Prevent pull-to-refresh on mobile */
+html, body {
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Refresh button */
+.refresh-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.refresh-btn {
+    background: linear-gradient(135deg, #7c4dff, #00c853);
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124, 77, 255, 0.5);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.refresh-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(124, 77, 255, 0.7);
+}
+
+.refresh-btn:active {
+    transform: scale(0.95);
+}
+</style>
+
+<div class="refresh-container">
+    <button class="refresh-btn" onclick="window.location.reload()" title="Refresh Page">
+        🔄
+    </button>
+</div>
+
+<script>
+// Prevent pull-to-refresh
+document.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Prevent overscroll
+document.body.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
+</script>
+""", unsafe_allow_html=True)
 
 # Auth gate: redirect to login if trying to access a protected page without auth
 if page in PROTECTED_PAGES and not is_logged_in():
