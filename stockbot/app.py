@@ -422,19 +422,34 @@ with st.sidebar:
     <script>
     // Auto-collapse sidebar after page selection
     document.addEventListener('DOMContentLoaded', function() {
-        // Find all sidebar buttons
+        // Find all sidebar navigation buttons
         const sidebarButtons = document.querySelectorAll('section[data-testid="stSidebar"] button');
         
         sidebarButtons.forEach(button => {
             button.addEventListener('click', function() {
                 // Small delay to let the page load
                 setTimeout(() => {
-                    // Collapse sidebar by clicking the collapse button if it exists
+                    // Method 1: Try clicking the collapse button
                     const collapseBtn = document.querySelector('[data-testid="collapsedControl"]');
                     if (collapseBtn) {
                         collapseBtn.click();
+                        return;
                     }
-                }, 100);
+                    
+                    // Method 2: Try pressing Escape key
+                    document.dispatchEvent(new KeyboardEvent('keydown', {
+                        key: 'Escape',
+                        keyCode: 27,
+                        bubbles: true
+                    }));
+                    
+                    // Method 3: Directly manipulate sidebar width
+                    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+                    if (sidebar) {
+                        sidebar.style.transform = 'translateX(-100%)';
+                        sidebar.style.transition = 'transform 0.3s ease';
+                    }
+                }, 150);
             });
         });
     });
