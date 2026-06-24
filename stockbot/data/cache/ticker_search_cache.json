@@ -1,0 +1,77 @@
+{
+  "jindal": {
+    "timestamp": 1782282119.7202497,
+    "results": [
+      {
+        "symbol": "JINDALSAW.NS",
+        "name": "JINDALSAW Ltd",
+        "exchange": "NSE",
+        "index": "nifty500",
+        "source": "nse"
+      },
+      {
+        "symbol": "JINDALSTEL.NS",
+        "name": "JINDALSTEL Ltd",
+        "exchange": "NSE",
+        "index": "nifty500",
+        "source": "nse"
+      }
+    ]
+  },
+  "reliance.ns": {
+    "timestamp": 1782282350.3340726,
+    "results": [
+      {
+        "symbol": "RELIANCE.NS",
+        "name": "Reliance Industries Ltd",
+        "exchange": "NSE",
+        "source": "local"
+      }
+    ]
+  },
+  "space": {
+    "timestamp": 1782282363.7307444,
+    "results": []
+  },
+  "dabur": {
+    "timestamp": 1782282397.3792143,
+    "results": [
+      {
+        "symbol": "DABUR.NS",
+        "name": "DABUR Ltd",
+        "exchange": "NSE",
+        "index": "nifty_next50",
+        "source": "nse"
+      }
+    ]
+  },
+  "axis": {
+    "timestamp": 1782282720.7725308,
+    "results": [
+      {
+        "symbol": "AXIS.NS",
+        "name": "AXIS Ltd",
+        "exchange": "NSE",
+        "source": "guess"
+      },
+      {
+        "symbol": "AXISBANK.NS",
+        "name": "Axis Bank Ltd",
+        "exchange": "NSE",
+        "source": "local"
+      }
+    ]
+  },
+  "trent": {
+    "timestamp": 1782283076.1587205,
+    "results": [
+      {
+        "symbol": "TRENT.NS",
+        "name": "TRENT Ltd",
+        "exchange": "NSE",
+        "index": "nifty50",
+        "source": "nse"
+      }
+    ]
+  }
+}

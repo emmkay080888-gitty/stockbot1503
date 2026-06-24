@@ -12,6 +12,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- API Keys ---
 TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY", "")
+ALPHAVANTAGE_API_KEY = os.getenv("ALPHAVANTAGE_API_KEY", "")
 
 # --- Scanning Settings ---
 MAX_STOCKS_TO_SCAN = int(os.getenv("MAX_STOCKS_TO_SCAN", "100"))

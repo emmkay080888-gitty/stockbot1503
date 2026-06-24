@@ -1,88 +1,81 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-node_modules/
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js build output
-.next/
-/out/
-
-# production
-/build
-dist/
-
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
+.installed.cfg
 *.egg
+
+# Virtual Environment
 venv/
 .venv/
-venv_check/
+env/
+.env
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-.streanlit/secrets.toml
-*.env.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# Generated reports (p2)
-reports/
-
-# SQLite dev databases
-*.db
-
-# OS generated
+# OS
+.DS_Store
 Thumbs.db
 
-# Android SDK
-android-sdk/
-
-# Android build
-android/
-.gradle/
-local.properties
-
 # Streamlit
-.streamlit/secrets.toml
+.streamlit/
 
-# Sounds (if custom)
-stockbot/sounds/*.wav
-stockbot/sounds/*.mp3
-stockbot/sounds/*.ogg
+# Data files
+*.csv
+*.parquet
+*.db
+*.sqlite
 
-# Build artifacts
-*.exe
-*.msi
+# Cache
+data/cache/
+*.cache
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# Secrets
+secrets/
+credentials.json
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Node (if any frontend)
+node_modules/
+package-lock.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp

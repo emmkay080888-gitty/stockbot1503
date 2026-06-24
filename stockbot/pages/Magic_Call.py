@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.markets import get_current_market_key, get_market_config, get_currency, apply_suffix
+from utils.ticker_search import search_tickers
 from data.fetcher import fetch_historical, fetch_multiple_timeframes, fetch_fundamentals, fetch_options_chain
 from analysis.indicators import add_all_indicators
 from analysis.strategies import run_all_strategies
@@ -322,13 +323,35 @@ def show():
     with col_inp2:
         st.markdown("### 🎯 Trade Parameters")
 
-        ticker = st.text_input(
-            "Ticker Symbol",
+        # Smart ticker search
+        ticker_input = st.text_input(
+            "Search Company or Ticker",
             value=st.session_state.get("magic_ticker", ""),
-            placeholder="e.g. AAPL, RELIANCE, TSLA",
+            placeholder="Type company name or ticker (e.g., 'Reliance', 'RELIANCE')",
             key="magic_ticker_input",
-            help="Enter the stock ticker from your chart",
-        ).strip().upper()
+            help="Search by company name, ticker symbol, or short form"
+        )
+        
+        # Search for tickers
+        if ticker_input:
+            search_results = search_tickers(ticker_input, limit=5)
+            
+            if search_results:
+                # Create dropdown options
+                ticker_options = [f"{r['symbol']} - {r['name']} ({r['exchange']})" for r in search_results]
+                selected_idx = st.selectbox(
+                    "Select Ticker",
+                    range(len(ticker_options)),
+                    format_func=lambda i: ticker_options[i],
+                    label_visibility="collapsed"
+                )
+                ticker = search_results[selected_idx]["symbol"]
+            else:
+                # No results, use input as-is
+                ticker = ticker_input.strip().upper()
+                st.caption(f"Using: {ticker}")
+        else:
+            ticker = ""
 
         # Apply market suffix if needed
         ticker_full = apply_suffix(ticker, market_key) if ticker else ticker

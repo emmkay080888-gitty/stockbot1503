@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import STRATEGY_WEIGHTS
 from utils.config_helpers import get_min_score, get_max_stocks
 from utils.markets import get_current_market_key, get_market_config, get_currency
+from utils.ticker_search import search_tickers
 from data.universe import get_universe
 from analysis.backtest import run_backtest
 
@@ -116,6 +117,42 @@ def show():
         "<p class='sub-header'>Validate trading strategies against historical data to estimate performance</p>",
         unsafe_allow_html=True,
     )
+
+    # ─── Quick Ticker Search ──────────────────────────────────────
+    with st.expander("🔎 Quick Ticker Search", expanded=False):
+        st.markdown("**Search for a specific stock to backtest**")
+        search_col1, search_col2 = st.columns([3, 1])
+        
+        with search_col1:
+            search_query = st.text_input(
+                "Search Company or Ticker",
+                placeholder="Type company name or ticker (e.g., 'Reliance', 'RELIANCE')",
+                label_visibility="collapsed"
+            )
+        
+        with search_col2:
+            search_clicked = st.button("Search", type="secondary")
+        
+        if search_clicked and search_query:
+            search_results = search_tickers(search_query, limit=5)
+            
+            if search_results:
+                st.markdown("**Search Results:**")
+                for result in search_results:
+                    col1, col2, col3 = st.columns([2, 3, 1])
+                    with col1:
+                        st.code(result['symbol'])
+                    with col2:
+                        st.write(f"{result['name']} ({result['exchange']})")
+                    with col3:
+                        if st.button("Analyze", key=f"bt_analyze_{result['symbol']}"):
+                            st.session_state["selected_ticker"] = result['symbol']
+                            st.session_state["current_page"] = "stock_analysis"
+                            st.rerun()
+            else:
+                st.warning("No results found. Try a different search term.")
+
+    st.divider()
 
     # ─── Backtest Controls ────────────────────────────────────────
     market_key = get_current_market_key()

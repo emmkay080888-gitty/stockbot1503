@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.markets import get_current_market_key, get_market_config, get_currency, apply_suffix
+from utils.ticker_search import search_tickers
 from data.fetcher import fetch_historical, fetch_fundamentals
 from analysis.indicators import add_all_indicators
 from analysis.strategies import run_all_strategies
@@ -146,14 +147,12 @@ def _safe(val, default=0.0):
 
 
 def search_company(query: str) -> list[str]:
-    """Search for a company by name using yfinance search."""
+    """Search for a company by name using the multi-source ticker search."""
     if not query or len(query) < 2:
         return []
     try:
-        import yfinance as yf
-        results = yf.Search(query)
-        if results and results.quotes:
-            return [r["symbol"] for r in results.quotes if "symbol" in r][:8]
+        results = search_tickers(query, limit=8)
+        return [r["symbol"] for r in results]
     except Exception:
         pass
     return []
@@ -430,39 +429,34 @@ def show():
         col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
 
         with col_s1:
-            # Ticker with company search
+            # Smart ticker search with autocomplete
             ticker_input = st.text_input(
-                "Ticker or Company Name",
+                "Search Company or Ticker",
                 value=st.session_state.get("live_ticker_input", ""),
-                placeholder="e.g. AAPL, RELIANCE, TSLA, or company name...",
+                placeholder="Type company name or ticker (e.g., 'Reliance', 'RELIANCE')",
                 key="live_ticker_input",
-                help="Enter a ticker symbol or company name to auto-search",
+                help="Search by company name, ticker symbol, or short form"
             ).strip().upper()
-
-            # Resolved ticker (from search suggestions or direct input)
-            if "live_ticker_resolved" not in st.session_state:
-                st.session_state["live_ticker_resolved"] = ""
-
-            # Auto-search if it looks like a company name (not a ticker)
-            if ticker_input and len(ticker_input) > 5 and not any(c.isdigit() for c in ticker_input):
-                suggestions = search_company(ticker_input)
-                if suggestions:
-                    selected = st.selectbox(
-                        "Did you mean?",
-                        options=suggestions,
-                        key="live_search_hint",
+            
+            # Search for tickers
+            if ticker_input:
+                search_results = search_tickers(ticker_input, limit=5)
+                
+                if search_results:
+                    # Create dropdown options
+                    ticker_options = [f"{r['symbol']} - {r['name']} ({r['exchange']})" for r in search_results]
+                    selected_idx = st.selectbox(
+                        "Select Ticker",
+                        range(len(ticker_options)),
+                        format_func=lambda i: ticker_options[i],
+                        label_visibility="collapsed"
                     )
-                    if selected:
-                        st.session_state["live_ticker_resolved"] = selected
-                    else:
-                        st.session_state["live_ticker_resolved"] = ticker_input
+                    ticker_input = search_results[selected_idx]["symbol"]
                 else:
-                    st.session_state["live_ticker_resolved"] = ticker_input
+                    # No results, use input as-is
+                    st.caption(f"Using: {ticker_input}")
             else:
-                st.session_state["live_ticker_resolved"] = ticker_input
-
-            # Use resolved ticker for analysis; fall back to direct input
-            ticker_input = st.session_state["live_ticker_resolved"] or ticker_input
+                ticker_input = ""
 
             ticker_full = apply_suffix(ticker_input, market_key) if ticker_input else ""
 

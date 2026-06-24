@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.markets import get_current_market_key, get_display_tickers, get_currency
+from utils.ticker_search import search_tickers, get_popular_tickers
 from data.fetcher import fetch_historical
 from analysis.indicators import add_all_indicators
 from signals.generator import analyze_ticker
@@ -152,7 +153,7 @@ def show():
         unsafe_allow_html=True,
     )
 
-    # Ticker input
+    # Ticker input with smart search
     market_key = get_current_market_key()
     market_currency = get_currency(market_key)
     market_tickers = get_display_tickers(market_key)
@@ -160,7 +161,35 @@ def show():
 
     col1, col2 = st.columns([2, 4])
     with col1:
-        ticker = st.text_input("Ticker Symbol", value=default_ticker_val).strip().upper()
+        # Smart ticker search with autocomplete
+        search_query = st.text_input(
+            "Search Company or Ticker",
+            value=default_ticker_val,
+            placeholder="Type company name or ticker (e.g., 'Reliance', 'RELIANCE')",
+            help="Search by company name, ticker symbol, or short form"
+        )
+        
+        # Search for tickers
+        if search_query:
+            search_results = search_tickers(search_query, limit=10)
+            
+            if search_results:
+                # Create dropdown options
+                ticker_options = [f"{r['symbol']} - {r['name']} ({r['exchange']})" for r in search_results]
+                selected_idx = st.selectbox(
+                    "Select Ticker",
+                    range(len(ticker_options)),
+                    format_func=lambda i: ticker_options[i],
+                    label_visibility="collapsed"
+                )
+                ticker = search_results[selected_idx]["symbol"]
+            else:
+                # No results, use query as-is
+                ticker = search_query.strip().upper()
+                st.caption(f"Using: {ticker}")
+        else:
+            ticker = default_ticker_val
+    
     with col2:
         period = st.selectbox("Time Period", ["1mo", "3mo", "6mo", "1y", "2y"], index=2)
 
