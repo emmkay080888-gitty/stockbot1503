@@ -1,0 +1,1 @@
+"""Data module for fetching and managing stock data from multiple sources."""

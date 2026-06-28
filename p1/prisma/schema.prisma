@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  passwordHash  String?
+  image         String?
+  role          String   @default("member") // admin, member
+  tier          String   @default("free") // free, pro
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  subscription  Subscription?
+  tradingAccount TradingAccount?
+  lessons       UserLesson[]
+  transactions  Transaction[]
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  plan          String   // monthly, yearly
+  status        String   @default("active") // active, cancelled, expired
+  startedAt     DateTime @default(now())
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model StockSignal {
+  id          String   @id @default(cuid())
+  symbol      String
+  name        String
+  action      String   // buy, sell, hold, strong_buy, strong_sell
+  entryPrice  Float
+  targetPrice Float
+  stopLoss    Float?
+  confidence  Int      // 1-100
+  timeframe   String   // short_term, medium_term, long_term
+  analysis    String
+  riskLevel   String   // low, medium, high
+  sector      String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  isActive    Boolean  @default(true)
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  content     String   @default("")
+  category    String   // beginner, intermediate, advanced, strategy, analysis
+  type        String   // article, video, course
+  imageUrl    String?
+  videoUrl    String?
+  duration    String?  // e.g. "10 min", "1 hour"
+  author      String?
+  difficulty  String   @default("beginner") // beginner, intermediate, advanced
+  premium     Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       UserLesson[]
+}
+
+model UserLesson {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  completed Boolean  @default(false)
+  progress  Int      @default(0) // 0-100
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+}
+
+model TradingAccount {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  balance   Float    @default(100000.0) // virtual money
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  positions PortfolioPosition[]
+  trades    Transaction[]
+}
+
+model PortfolioPosition {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     TradingAccount @relation(fields: [accountId], references: [id])
+  symbol      String
+  shares      Float
+  avgPrice    Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([accountId, symbol])
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  accountId String?
+  account   TradingAccount? @relation(fields: [accountId], references: [id])
+  type      String   // buy, sell, deposit, subscription
+  symbol    String?
+  shares    Float?
+  price     Float?
+  total     Float
+  status    String   @default("completed")
+  createdAt DateTime @default(now())
+}

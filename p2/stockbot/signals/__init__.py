@@ -1,0 +1,1 @@
+"""Signals module for generating and consolidating trading signals."""

@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+venv_check/
+*.egg
+
+# Environment
+.env
+.streanlit/secrets.toml
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Reports (generated output)
+reports/
+
+# Android SDK
+android-sdk/
+
+# Android build
+android/
+.gradle/
+build/
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+stockbot/.streamlit/secrets.toml
+
+# Sounds (if custom)
+stockbot/sounds/*.wav
+stockbot/sounds/*.mp3
+stockbot/sounds/*.ogg
+
+# Build artifacts
+dist/
+*.exe
+*.msi

@@ -1,0 +1,277 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ModType {
+  TRAINER
+  CHEAT
+  OVERLAY
+  QOL
+  UI
+  FIX
+  CONTENT
+  OTHER
+}
+
+enum ModStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum UserRole {
+  USER
+  MODDER
+  ADMIN
+}
+
+enum Platform {
+  PC
+  XBOX
+  PLAYSTATION
+  NINTENDO
+  MOBILE
+  ALL
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole     @default(USER)
+  passwordHash  String?      @db.Text
+  bio           String?      @db.Text
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  mods        Mod[]
+  collections Collection[]
+  modReviews  ModReview[]
+  gameReviews GameReview[]
+  favorites   UserFavorite[]
+
+  @@index([email])
+}
+
+model Game {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  description   String   @db.Text
+  shortDescription String?
+  developer     String
+  publisher     String?
+  releaseDate   DateTime?
+  platforms     Platform[]
+  coverImage    String?
+  bannerImage   String?
+  averageRating Float    @default(0)
+  modCount      Int      @default(0)
+  downloadCount Int      @default(0)
+  featured      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  genres  GenreOnGame[]
+  mods    Mod[]
+  reviews GameReview[]
+
+  @@index([title])
+  @@index([slug])
+  @@index([featured])
+}
+
+model Genre {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  games GenreOnGame[]
+}
+
+model GenreOnGame {
+  gameId  String
+  genreId String
+  game    Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  genre   Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, genreId])
+}
+
+model Mod {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  description   String    @db.Text
+  shortDescription String?
+  type          ModType   @default(OTHER)
+  version       String    @default("1.0.0")
+  downloadUrl   String?
+  fileSize      Int?
+  imageUrl      String?
+  images        String[]
+  compatibility String?
+  downloads     Int       @default(0)
+  views         Int       @default(0)
+  likes         Int       @default(0)
+  featured      Boolean   @default(false)
+  verified      Boolean   @default(false)
+  status        ModStatus @default(PENDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  gameId  String
+  game    Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  authorId String
+  author  User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  tags        TagOnMod[]
+  reviews     ModReview[]
+  collections CollectionEntry[]
+  favoritedBy UserFavorite[]
+
+  @@index([gameId])
+  @@index([authorId])
+  @@index([slug])
+  @@index([featured])
+  @@index([type])
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  mods TagOnMod[]
+}
+
+model TagOnMod {
+  modId String
+  tagId String
+  mod   Mod  @relation(fields: [modId], references: [id], onDelete: Cascade)
+  tag   Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([modId, tagId])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  coverImage  String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mods   CollectionEntry[]
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+model CollectionEntry {
+  id           String @id @default(cuid())
+  collectionId String
+  modId        String
+  order        Int    @default(0)
+  note         String?
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  mod        Mod        @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, modId])
+  @@index([collectionId])
+}
+
+model ModReview {
+  id        String   @id @default(cuid())
+  rating    Int
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modId  String
+  mod    Mod  @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, modId])
+  @@index([modId])
+}
+
+model GameReview {
+  id        String   @id @default(cuid())
+  rating    Int
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId String
+  game   Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+  @@index([gameId])
+}
+
+model UserFavorite {
+  userId String
+  modId  String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod    Mod  @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@id([userId, modId])
+}

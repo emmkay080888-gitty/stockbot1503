@@ -1,0 +1,1 @@
+"""Stock Signal Bot - Docker deployment version."""

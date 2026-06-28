@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  stockbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stockbot
+    ports:
+      - "8501:8501"
+    environment:
+      - TWELVEDATA_API_KEY=${TWELVEDATA_API_KEY:-}
+      - MAX_STOCKS_TO_SCAN=${MAX_STOCKS_TO_SCAN:-100}
+      - MIN_SIGNAL_SCORE=${MIN_SIGNAL_SCORE:-30}
+    volumes:
+      - stockbot_reports:/app/reports
+    restart: unless-stopped
+
+volumes:
+  stockbot_reports:

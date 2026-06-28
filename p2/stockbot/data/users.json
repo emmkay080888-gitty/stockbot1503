@@ -1,0 +1,29 @@
+{
+  "admin": {
+    "email": "admin@stockbot.local",
+    "password": "21af646a93e6b4fa9c9f468f4f4717e590cb14034763ebfe70f371033c901199",
+    "name": "Admin",
+    "secret_question": "What is your favorite book?",
+    "secret_answer": "9ecc07702e104987eb0b821dcd8fb2d548512bd8954065fe5a6cf12f995023e0",
+    "role": "admin",
+    "created_at": "2026-06-14T19:36:54.527781",
+    "remember_tokens": [
+      "dea9812ed8655b06ab1ecd923783c06b",
+      "e541626d2e0bf78b62e265c4554795bc",
+      "9e386be902588a9b8544bc2048463da8"
+    ],
+    "preferences": {
+      "default_market": "india"
+    }
+  },
+  "akash": {
+    "email": "akash_overurheads@yahoo.com",
+    "password": "3f99df52f09d631747bcf1f42d70ab1dcfaecad209672b42ed9f8f2f1545a26b",
+    "name": "akash",
+    "secret_question": "What is your mother's maiden name?",
+    "secret_answer": "2bf6a448a5294040b914999ab2b71dbfb28af9a4c4bc29ecdc808138326a51cc",
+    "remember_tokens": [
+      "0ba2c18519155b971a57e734638459d4"
+    ]
+  }
+}
